@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Workspace</title>
+    <style>
+        .module {
+            margin-bottom: 20px;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .card {
+            background-color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 10px;
+            width: 80%;
+            max-width: 600px;
+        }
+        p, table, button, input {
+            margin-bottom: 10px;
+        }
+        button, input[type="password"] {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        input[type="password"] {
+            width: calc(100% - 22px);
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            text-align: left;
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        h2 {
+            color: #333;
+        }
+    </style>
+    <script>
+        function fetchAllStudents() {
+            const token = localStorage.getItem('token');
+            if (token) {
+                fetch('/admin/studentInfo', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 200) {
+                            displayAllStudentsInfo(data.data);
+                        } else {
+                            alert('Failed to get all students info: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching all students info:', error);
+                        alert('Error fetching all students info');
+                    });
+            } else {
+                alert('No token found. Please login.');
+            }
+        }
+
+        function fetchAllTeachers() {
+            const token = localStorage.getItem('token');
+            if (token) {
+                fetch('/admin/teacherInfo', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 200) {
+                            displayAllTeachersInfo(data.data);
+                        } else {
+                            alert('Failed to get all teachers info: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching all teachers info:', error);
+                        alert('Error fetching all teachers info');
+                    });
+            } else {
+                alert('No token found. Please login.');
+            }
+        }
+
+        function fetchStudentInfo() {
+            const token = localStorage.getItem('token');
+            const studentId = document.getElementById('studentId').value;
+            if (!studentId) {
+                alert('Please enter a student ID');
+                return;
+            }
+            if (token) {
+                fetch(`/admin/studentInfo/${studentId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 200) {
+                            displayStudentInfo(data.data);
+                            populateUpdateStudentForm(data.data);
+                        } else {
+                            alert('Failed to get student info: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching student info:', error);
+                        alert('Error fetching student info');
+                    });
+            } else {
+                alert('No token found. Please login.');
+            }
+        }
+
+        function fetchTeacherInfo() {
+            const token = localStorage.getItem('token');
+            const teacherId = document.getElementById('teacherId').value;
+            if (!teacherId) {
+                alert('Please enter a teacher ID');
+                return;
+            }
+            if (token) {
+                fetch(`/admin/teacherInfo/${teacherId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 200) {
+                            displayTeacherInfo(data.data);
+                            populateUpdateTeacherForm(data.data);
+                        } else {
+                            alert('Failed to get teacher info: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching teacher info:', error);
+                        alert('Error fetching teacher info');
+                    });
+            } else {
+                alert('No token found. Please login.');
+            }
+        }
+
+        function updateStudentInfo() {
+            const token = localStorage.getItem('token');
+            const studentId = document.getElementById('studentId').value;
+            const studentInfo = {
+                username: document.getElementById('updateUsername').value,
+                classId: document.getElementById('updateClassId').value,
+                studentName: document.getElementById('updateStudentName').value,
+                sex: document.querySelector('input[name="updateSex"]:checked').value,
+                birthdate: document.getElementById('updateBirthdate').value,
+                contactInfo: document.getElementById('updateContactInfo').value,
+                address: document.getElementById('updateAddress').value
+            };
+
+            if (token) {
+                fetch(`/admin/studentInfo/${studentId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(studentInfo)
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 200) {
+                            alert('Update student info successful');
+                            fetchStudentInfo(); // Refresh student info
+                        } else {
+                            alert('Failed to update student info: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error updating student info:', error);
+                        alert('Error updating student info');
+                    });
+            } else {
+                alert('No token found. Please login.');
+            }
+        }
+
+        function updateTeacherInfo() {
+            const token = localStorage.getItem('token');
+            const teacherId = document.getElementById('teacherId').value;
+            const teacherInfo = {
+                username: document.getElementById('updateTeacherUsername').value,
+                teacherName: document.getElementById('updateTeacherName').value,
+                sex: document.querySelector('input[name="updateTeacherSex"]:checked').value
+            };
+
+            if (token) {
+                fetch(`/admin/teacherInfo/${teacherId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(teacherInfo)
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 200) {
+                            alert('Update teacher info successful');
+                            fetchTeacherInfo(); // Refresh teacher info
+                        } else {
+                            alert('Failed to update teacher info: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error updating teacher info:', error);
+                        alert('Error updating teacher info');
+                    });
+            } else {
+                alert('No token found. Please login.');
+            }
+        }
+
+        function deleteStudent() {
+            const token = localStorage.getItem('token');
+            const studentId = document.getElementById('deleteStudentId').value;
+            if (!studentId) {
+                alert('Please enter a student ID');
+                return;
+            }
+            if (token) {
+                fetch(`/admin/studentInfo/${studentId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 200) {
+                            alert('Delete student successful');
+                            fetchAllStudents(); // Refresh the list of all students
+                        } else {
+                            alert('Failed to delete student: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error deleting student:', error);
+                        alert('Error deleting student');
+                    });
+            } else {
+                alert('No token found. Please login.');
+            }
+        }
+
+        function deleteTeacher() {
+            const token = localStorage.getItem('token');
+            const teacherId = document.getElementById('deleteTeacherId').value;
+            if (!teacherId) {
+                alert('Please enter a teacher ID');
+                return;
+            }
+            if (token) {
+                fetch(`/admin/teacherInfo/${teacherId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 200) {
+                            alert('Delete teacher successful');
+                            fetchAllTeachers(); // Refresh the list of all teachers
+                        } else {
+                            alert('Failed to delete teacher: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error deleting teacher:', error);
+                        alert('Error deleting teacher');
+                    });
+            } else {
+                alert('No token found. Please login.');
+            }
+        }
+
+        function displayAllStudentsInfo(students) {
+            let infoHTML = `<h2>所有学生信息</h2>`;
+            let tableHTML = `<table border="1">
+                            <tr>
+                                <th>用户名</th>
+                                <th>班级ID</th>
+                                <th>学生姓名</th>
+                                <th>性别</th>
+                                <th>出生日期</th>
+                                <th>联系方式</th>
+                                <th>地址</th>
+                            </tr>`;
+            students.forEach(student => {
+                tableHTML += `
+                <tr>
+                    <td>${student.username}</td>
+                    <td>${student.classId}</td>
+                    <td>${student.studentName}</td>
+                    <td>${student.sex === 'male' ? '男' : '女'}</td>
+                    <td>${student.birthdate}</td>
+                    <td>${student.contactInfo}</td>
+                    <td>${student.address}</td>
+                </tr>`;
+            });
+            tableHTML += `</table>`;
+            document.getElementById('allStudentsInfoContainer').innerHTML = infoHTML + tableHTML;
+        }
+
+        function displayAllTeachersInfo(teachers) {
+            let infoHTML = `<h2>所有教师信息</h2>`;
+            let tableHTML = `<table border="1">
+                            <tr>
+                                <th>用户名</th>
+                                <th>教师姓名</th>
+                                <th>性别</th>
+                            </tr>`;
+            teachers.forEach(teacher => {
+                tableHTML += `
+                <tr>
+                    <td>${teacher.username}</td>
+                    <td>${teacher.teacherName}</td>
+                    <td>${teacher.sex === 'male' ? '男' : '女'}</td>
+                </tr>`;
+            });
+            tableHTML += `</table>`;
+            document.getElementById('allTeachersInfoContainer').innerHTML = infoHTML + tableHTML;
+        }
+
+        function displayStudentInfo(student) {
+            const infoHTML = `
+                <h2>学生信息</h2>
+                <p>用户名：${student.username}</p>
+                <p>班级ID：${student.classId}</p>
+                <p>学生姓名：${student.studentName}</p>
+                <p>性别：${student.sex === 'male' ? '男' : '女'}</p>
+                <p>出生日期：${student.birthdate}</p>
+                <p>联系方式：${student.contactInfo}</p>
+                <p>地址：${student.address}</p>
+            `;
+            document.getElementById('singleStudentInfoContainer').innerHTML = infoHTML;
+        }
+
+        function displayTeacherInfo(teacher) {
+            const infoHTML = `
+                <h2>教师信息</h2>
+                <p>用户名：${teacher.username}</p>
+                <p>教师姓名：${teacher.teacherName}</p>
+                <p>性别：${teacher.sex === 'male' ? '男' : '女'}</p>
+            `;
+            document.getElementById('singleTeacherInfoContainer').innerHTML = infoHTML;
+        }
+
+        function populateUpdateStudentForm(student) {
+            document.getElementById('updateStudentFormContainer').innerHTML = `
+                <h2>修改学生信息</h2>
+                <form id="updateStudentForm">
+                    <label for="updateUsername">用户名：</label>
+                    <input type="text" id="updateUsername" name="username" value="${student.username}"><br>
+                    <label for="updateClassId">班级ID：</label>
+                    <input type="text" id="updateClassId" name="classId" value="${student.classId}"><br>
+                    <label for="updateStudentName">学生姓名：</label>
+                    <input type="text" id="updateStudentName" name="studentName" value="${student.studentName}"><br>
+                    <label for="updateSex">性别：</label>
+                    <input type="radio" id="updateMale" name="updateSex" value="male" ${student.sex === 'male' ? 'checked' : ''}>
+                    <label for="updateMale">男</label>
+                    <input type="radio" id="updateFemale" name="updateSex" value="female" ${student.sex === 'female' ? 'checked' : ''}>
+                    <label for="updateFemale">女</label><br>
+                    <label for="updateBirthdate">出生日期：</label>
+                    <input type="date" id="updateBirthdate" name="birthdate" value="${student.birthdate}"><br>
+                    <label for="updateContactInfo">联系方式：</label>
+                    <input type="text" id="updateContactInfo" name="contactInfo" value="${student.contactInfo}"><br>
+                    <label for="updateAddress">地址：</label>
+                    <input type="text" id="updateAddress" name="address" value="${student.address}"><br>
+                    <button type="button" onclick="updateStudentInfo()">更新学生信息</button>
+                </form>
+            `;
+        }
+
+        function populateUpdateTeacherForm(teacher) {
+            document.getElementById('updateTeacherFormContainer').innerHTML = `
+                <h2>修改教师信息</h2>
+                <form id="updateTeacherForm">
+                    <label for="updateTeacherUsername">用户名：</label>
+                    <input type="text" id="updateTeacherUsername" name="username" value="${teacher.username}"><br>
+                    <label for="updateTeacherName">教师姓名：</label>
+                    <input type="text" id="updateTeacherName" name="teacherName" value="${teacher.teacherName}"><br>
+                    <label for="updateTeacherSex">性别：</label>
+                    <input type="radio" id="updateTeacherMale" name="updateTeacherSex" value="male" ${teacher.sex === 'male' ? 'checked' : ''}>
+                    <label for="updateTeacherMale">男</label>
+                    <input type="radio" id="updateTeacherFemale" name="updateTeacherSex" value="female" ${teacher.sex === 'female' ? 'checked' : ''}>
+                    <label for="updateTeacherFemale">女</label><br>
+                    <button type="button" onclick="updateTeacherInfo()">更新教师信息</button>
+                </form>
+            `;
+        }
+        function fetchAllCourses() {
+            const token = localStorage.getItem('token');
+            if (token) {
+                fetch('/admin/courseInfo', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 200) {
+                            displayAllCoursesInfo(data.data);
+                        } else {
+                            alert('Failed to get all courses info: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching all courses info:', error);
+                        alert('Error fetching all courses info');
+                    });
+            } else {
+                alert('No token found. Please login.');
+            }
+        }
+
+        function fetchCourseInfo() {
+            const token = localStorage.getItem('token');
+            const courseId = document.getElementById('courseId').value;
+            if (!courseId) {
+                alert('Please enter a course ID');
+                return;
+            }
+            if (token) {
+                fetch(`/admin/courseInfo/${courseId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 200) {
+                            displayCourseInfo(data.data);
+                            populateUpdateCourseForm(data.data);
+                        } else {
+                            alert('Failed to get course info: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching course info:', error);
+                        alert('Error fetching course info');
+                    });
+            } else {
+                alert('No token found. Please login.');
+            }
+        }
+
+        function updateCourseInfo() {
+            const token = localStorage.getItem('token');
+            const courseId = document.getElementById('courseId').value;
+            const courseInfo = {
+                courseNo: document.getElementById('updateCourseNo').value,
+                courseName: document.getElementById('updateCourseName').value,
+                teacherId: document.getElementById('updateTeacherId').value
+            };
+
+            if (token) {
+                fetch(`/admin/courseInfo/${courseId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(courseInfo)
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 200) {
+                            alert('Update course info successful');
+                            fetchCourseInfo(); // Refresh course info
+                        } else {
+                            alert('Failed to update course info: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error updating course info:', error);
+                        alert('Error updating course info');
+                    });
+            } else {
+                alert('No token found. Please login.');
+            }
+        }
+
+        function deleteCourse() {
+            const token = localStorage.getItem('token');
+            const courseId = document.getElementById('deleteCourseId').value;
+            if (!courseId) {
+                alert('Please enter a course ID');
+                return;
+            }
+            if (token) {
+                fetch(`/admin/courseInfo/${courseId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 200) {
+                            alert('Delete course successful');
+                            fetchAllCourses(); // Refresh the list of all courses
+                        } else {
+                            alert('Failed to delete course: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error deleting course:', error);
+                        alert('Error deleting course');
+                    });
+            } else {
+                alert('No token found. Please login.');
+            }
+        }
+
+        function displayAllCoursesInfo(courses) {
+            let infoHTML = `<h2>所有课程信息</h2>`;
+            let tableHTML = `<table border="1">
+                    <tr>
+                        <th>课程编号</th>
+                        <th>课程名称</th>
+                        <th>教师ID</th>
+                    </tr>`;
+            courses.forEach(course => {
+                tableHTML += `
+        <tr>
+            <td>${course.courseNo}</td>
+            <td>${course.courseName}</td>
+            <td>${course.teacherId}</td>
+        </tr>`;
+            });
+            tableHTML += `</table>`;
+            document.getElementById('allCoursesInfoContainer').innerHTML = infoHTML + tableHTML;
+        }
+
+        function displayCourseInfo(course) {
+            const infoHTML = `
+        <h2>课程信息</h2>
+        <p>课程编号：${course.courseNo}</p>
+        <p>课程名称：${course.courseName}</p>
+        <p>教师ID：${course.teacherId}</p>
+    `;
+            document.getElementById('singleCourseInfoContainer').innerHTML = infoHTML;
+        }
+
+        function populateUpdateCourseForm(course) {
+            document.getElementById('updateCourseFormContainer').innerHTML = `
+        <h2>修改课程信息</h2>
+        <form id="updateCourseForm">
+            <label for="updateCourseNo">课程编号：</label>
+            <input type="text" id="updateCourseNo" name="courseNo" value="${course.courseNo}"><br>
+            <label for="updateCourseName">课程名称：</label>
+            <input type="text" id="updateCourseName" name="courseName" value="${course.courseName}"><br>
+            <label for="updateTeacherId">教师ID：</label>
+            <input type="text" id="updateTeacherId" name="teacherId" value="${course.teacherId}"><br>
+            <button type="button" onclick="updateCourseInfo()">更新课程信息</button>
+        </form>
+    `;
+        }
+
+        function resetStudentPassword() {
+            const token = localStorage.getItem('token');
+            const studentId = document.getElementById('resetStudentPasswordId').value;
+            const newPassword = document.getElementById('resetStudentPassword').value;
+            if (!studentId || !newPassword) {
+                alert('请填写学生ID和新密码');
+                return;
+            }
+            const payload = {
+                password: newPassword
+            };
+            if (token) {
+                fetch(`/admin/studentPassword/${studentId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 200) {
+                            alert('重置学生密码成功');
+                        } else {
+                            alert('重置学生密码失败：' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error resetting student password:', error);
+                        alert('重置学生密码出错');
+                    });
+            } else {
+                alert('未找到token，请登录');
+            }
+        }
+
+        function resetTeacherPassword() {
+            const token = localStorage.getItem('token');
+            const teacherId = document.getElementById('resetTeacherPasswordId').value;
+            const newPassword = document.getElementById('resetTeacherPassword').value;
+            if (!teacherId || !newPassword) {
+                alert('请填写教师ID和新密码');
+                return;
+            }
+            const payload = {
+                password: newPassword
+            };
+            if (token) {
+                fetch(`/admin/teacherPassword/${teacherId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 200) {
+                            alert('重置教师密码成功');
+                        } else {
+                            alert('重置教师密码失败：' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error resetting teacher password:', error);
+                        alert('重置教师密码出错');
+                    });
+            } else {
+                alert('未找到token，请登录');
+            }
+        }
+
+        function adminLogout() {
+            const token = localStorage.getItem('token');
+            if (token) {
+                fetch('/admin/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 200) {
+                            alert('退出登录成功');
+                            window.location.href = '/';
+                        } else {
+                            alert('退出登录失败：' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error logging out:', error);
+                        alert('退出登录出错');
+                    });
+            } else {
+                alert('未找到token，请登录');
+            }
+        }
+
+    </script>
+</head>
+<body>
+
+<div class="module">
+    <button onclick="fetchAllStudents()">查询所有学生信息</button>
+    <div id="allStudentsInfoContainer"></div>
+</div>
+<div class="module">
+    <label for="studentId">学生ID：</label>
+    <input type="text" id="studentId" name="studentId">
+    <button onclick="fetchStudentInfo()">查询学生信息</button>
+    <div id="singleStudentInfoContainer"></div>
+    <div id="updateStudentFormContainer"></div>
+</div>
+<div class="module">
+    <label for="deleteStudentId">删除学生ID：</label>
+    <input type="text" id="deleteStudentId" name="deleteStudentId">
+    <button onclick="deleteStudent()">删除学生</button>
+</div>
+
+<div class="module">
+    <label for="resetStudentPasswordId">重置学生密码ID：</label>
+    <input type="text" id="resetStudentPasswordId" name="resetStudentPasswordId">
+    <label for="resetStudentPassword">新密码：</label>
+    <input type="password" id="resetStudentPassword" name="resetStudentPassword">
+    <button onclick="resetStudentPassword()">重置学生密码</button>
+</div>
+
+<div class="module">
+    <button onclick="fetchAllTeachers()">查询所有教师信息</button>
+    <div id="allTeachersInfoContainer"></div>
+</div>
+<div class="module">
+    <label for="teacherId">教师ID：</label>
+    <input type="text" id="teacherId" name="teacherId">
+    <button onclick="fetchTeacherInfo()">查询教师信息</button>
+    <div id="singleTeacherInfoContainer"></div>
+    <div id="updateTeacherFormContainer"></div>
+</div>
+<div class="module">
+    <label for="deleteTeacherId">删除教师ID：</label>
+    <input type="text" id="deleteTeacherId" name="deleteTeacherId">
+    <button onclick="deleteTeacher()">删除教师</button>
+</div>
+
+<div class="module">
+    <label for="resetTeacherPasswordId">重置教师密码ID：</label>
+    <input type="text" id="resetTeacherPasswordId" name="resetTeacherPasswordId">
+    <label for="resetTeacherPassword">新密码：</label>
+    <input type="password" id="resetTeacherPassword" name="resetTeacherPassword">
+    <button onclick="resetTeacherPassword()">重置教师密码</button>
+</div>
+
+<div class="module">
+    <button onclick="fetchAllCourses()">查询所有课程信息</button>
+    <div id="allCoursesInfoContainer"></div>
+</div>
+<div class="module">
+    <label for="courseId">课程ID：</label>
+    <input type="text" id="courseId" name="courseId">
+    <button onclick="fetchCourseInfo()">查询课程信息</button>
+    <div id="singleCourseInfoContainer"></div>
+    <div id="updateCourseFormContainer"></div>
+</div>
+<div class="module">
+    <label for="deleteCourseId">删除课程ID：</label>
+    <input type="text" id="deleteCourseId" name="deleteCourseId">
+    <button onclick="deleteCourse()">删除课程</button>
+</div>
+
+<div class="module">
+    <button onclick="adminLogout()">退出登录</button>
+</div>
+
+</body>
+</html>

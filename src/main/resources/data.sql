@@ -73,7 +73,7 @@ INSERT INTO teacher_info (username, password, teacher_name, sex) VALUES
 -- 插入 CourseInfo 表数据
 INSERT INTO course_info (course_no, course_name, teacher_id) VALUES
     ('C101', '数学', 1),
-    ('C102', '英语', 2),
+    ('C102', '英语', 1),
     ('C103', '物理', 3),
     ('C104', '化学', 4),
     ('C105', '生物', 5),

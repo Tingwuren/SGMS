@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Teacher Workspace</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .charts-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        .chart-wrapper {
+            flex: 1;
+            margin: 0 10px;
+            max-width: 400px; /* 限制图表的最大宽度 */
+        }
+        canvas {
+            width: 100% !important; /* 设置canvas元素的宽度 */
+            height: 300px !important; /* 设置canvas元素的高度 */
+        }
+        .course-section {
+            margin-bottom: 40px;
+        }
+        .update-score-form, .add-student-form, .delete-student-form, .update-password-form {
+            margin-top: 20px;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .card {
+            background-color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 10px;
+            width: 80%;
+            max-width: 600px;
+        }
+        p, table, button, input {
+            margin-bottom: 10px;
+        }
+        button, input[type="password"] {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        input[type="password"] {
+            width: calc(100% - 22px);
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            text-align: left;
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        h2 {
+            color: #333;
+        }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = localStorage.getItem('token');
+            if (token) {
+                fetchTeacherInfo(token);
+                fetchTeacherCourses(token);
+            } else {
+                alert('No token found. Please login.');
+            }
+
+            document.getElementById('fetchScores').addEventListener('click', function() {
+                const token = localStorage.getItem('token');
+                if (token) {
+                    fetch('/teacher/score', {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 200) {
+                                const scoresByCourse = groupScoresByCourse(data.data);
+                                displayCourseScores(scoresByCourse);
+                            } else {
+                                alert('Failed to get scores: ' + data.message);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error fetching scores:', error);
+                            alert('Error fetching scores');
+                        });
+                } else {
+                    alert('No token found. Please login.');
+                }
+            });
+
+            document.getElementById('updateScoreButton').addEventListener('click', function() {
+                const token = localStorage.getItem('token');
+                const studentId = document.getElementById('studentId').value;
+                const courseId = document.getElementById('courseId').value;
+                const score = document.getElementById('score').value;
+
+                if (token) {
+                    fetch('/teacher/score', {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ studentId, courseId, score })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 200) {
+                                alert('Update student score successful');
+                                // Optionally, refresh the scores
+                                document.getElementById('fetchScores').click();
+                            } else {
+                                alert('Failed to update score: ' + data.message);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error updating score:', error);
+                            alert('Error updating score');
+                        });
+                } else {
+                    alert('No token found. Please login.');
+                }
+            });
+
+            document.getElementById('addStudentButton').addEventListener('click', function() {
+                const token = localStorage.getItem('token');
+                const studentId = document.getElementById('newStudentId').value;
+                const courseId = document.getElementById('newCourseId').value;
+                const score = document.getElementById('newScore').value;
+
+                if (token) {
+                    fetch('/teacher/addStudent', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ studentId, courseId, score })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 200) {
+                                alert('Add student successful');
+                                // Optionally, refresh the scores
+                                document.getElementById('fetchScores').click();
+                            } else {
+                                alert('Failed to add student: ' + data.message);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error adding student:', error);
+                            alert('Error adding student');
+                        });
+                } else {
+                    alert('No token found. Please login.');
+                }
+            });
+
+            document.getElementById('deleteStudentButton').addEventListener('click', function() {
+                const token = localStorage.getItem('token');
+                const studentId = document.getElementById('deleteStudentId').value;
+                const courseId = document.getElementById('deleteCourseId').value;
+
+                if (token) {
+                    fetch('/teacher/deleteStudent', {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ studentId, courseId })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 200) {
+                                alert('Delete student successful');
+                                // Optionally, refresh the scores
+                                document.getElementById('fetchScores').click();
+                            } else {
+                                alert('Failed to delete student: ' + data.message);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error deleting student:', error);
+                            alert('Error deleting student');
+                        });
+                } else {
+                    alert('No token found. Please login.');
+                }
+            });
+
+            document.getElementById('logoutButton').addEventListener('click', function() {
+                const token = localStorage.getItem('token');
+                if (token) {
+                    fetch('/teacher/logout', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 200) {
+                                alert('Logout successful');
+                                localStorage.removeItem('token');
+                                window.location.href = '/';
+                            } else {
+                                alert('Failed to logout: ' + data.message);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error logging out:', error);
+                            alert('Error logging out');
+                        });
+                } else {
+                    alert('No token found. Please login.');
+                }
+            });
+
+            document.getElementById('updatePasswordButton').addEventListener('click', function() {
+                const token = localStorage.getItem('token');
+                const password = document.getElementById('newPassword').value;
+
+                if (token) {
+                    fetch('/teacher/password', {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ password })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 200) {
+                                alert('Update password successful');
+                                localStorage.removeItem('token');
+                                window.location.href = '/';
+                            } else {
+                                alert('Failed to update password: ' + data.message);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error updating password:', error);
+                            alert('Error updating password');
+                        });
+                } else {
+                    alert('No token found. Please login.');
+                }
+            });
+        });
+
+        function fetchTeacherInfo(token) {
+            fetch('/teacher/info', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 200) {
+                        const userInfo = data.data;
+                        const userInfoHTML = `
+                        <div id="teacherInfo">
+                            <p>用户名：${userInfo.username}</p>
+                            <p>教师姓名：${userInfo.teacherName}</p>
+                            <p>性别：${userInfo.sex === 'male' ? '男' : '女'}</p>
+                        </div>
+                    `;
+                        document.body.insertAdjacentHTML('afterbegin', userInfoHTML);
+                    } else {
+                        alert('Failed to get teacher info: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching teacher info:', error);
+                    alert('Error fetching teacher info');
+                });
+        }
+
+        function fetchTeacherCourses(token) {
+            fetch('/teacher/course', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 200) {
+                        let tableHTML = `<div id="courseDetails"><table border="1">
+                                        <tr>
+                                            <th>课程ID</th>
+                                            <th>课程编号</th>
+                                            <th>课程名称</th>
+                                        </tr>`;
+                        data.data.forEach(course => {
+                            tableHTML += `
+                            <tr>
+                                <td>${course.courseId}</td>
+                                <td>${course.courseNo}</td>
+                                <td>${course.courseName}</td>
+                            </tr>
+                        `;
+                        });
+                        tableHTML += `</table></div>`;
+                        document.getElementById('teacherInfo').insertAdjacentHTML('afterend', tableHTML);
+                    } else {
+                        alert('Failed to get courses: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching courses:', error);
+                    alert('Error fetching courses');
+                });
+        }
+
+        function groupScoresByCourse(scores) {
+            return scores.reduce((acc, score) => {
+                const { courseName } = score;
+                if (!acc[courseName]) {
+                    acc[courseName] = [];
+                }
+                acc[courseName].push(score);
+                return acc;
+            }, {});
+        }
+
+        function displayCourseScores(scoresByCourse) {
+            const container = document.getElementById('courseScores');
+            container.innerHTML = ''; // 清空容器
+            Object.keys(scoresByCourse).forEach(courseName => {
+                const scores = scoresByCourse[courseName];
+                const courseSection = document.createElement('div');
+                courseSection.className = 'course-section';
+                courseSection.innerHTML = `
+                    <h2>${courseName}</h2>
+                    <table border="1">
+                        <thead>
+                            <tr>
+                                <th>学生ID</th>
+                                <th>学生姓名</th>
+                                <th>成绩</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${scores.map(score => `
+                                <tr>
+                                    <td>${score.studentId}</td>
+                                    <td>${score.studentName}</td>
+                                    <td>${score.score}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                    <div class="charts-container">
+                        <div class="chart-wrapper">
+                            <canvas id="histogram-${courseName}"></canvas>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="pieChart-${courseName}"></canvas>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(courseSection);
+                drawHistogram(scores, `histogram-${courseName}`);
+                drawPieChart(scores, `pieChart-${courseName}`);
+            });
+        }
+
+        function drawHistogram(scores, elementId) {
+            const ctx = document.getElementById(elementId).getContext('2d');
+            const scoreRanges = {
+                '0-60': 0,
+                '61-70': 0,
+                '71-80': 0,
+                '81-90': 0,
+                '91-100': 0
+            };
+            scores.forEach(score => {
+                if (score.score <= 60) scoreRanges['0-60']++;
+                else if (score.score <= 70) scoreRanges['61-70']++;
+                else if (score.score <= 80) scoreRanges['71-80']++;
+                else if (score.score <= 90) scoreRanges['81-90']++;
+                else scoreRanges['91-100']++;
+            });
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(scoreRanges),
+                    datasets: [{
+                        label: '成绩直方图',
+                        data: Object.values(scoreRanges),
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        function drawPieChart(scores, elementId) {
+            const ctx = document.getElementById(elementId).getContext('2d');
+            const scoreRanges = {
+                '0-60': 0,
+                '61-70': 0,
+                '71-80': 0,
+                '81-90': 0,
+                '91-100': 0
+            };
+            scores.forEach(score => {
+                if (score.score <= 60) scoreRanges['0-60']++;
+                else if (score.score <= 70) scoreRanges['61-70']++;
+                else if (score.score <= 80) scoreRanges['71-80']++;
+                else if (score.score <= 90) scoreRanges['81-90']++;
+                else scoreRanges['91-100']++;
+            });
+
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(scoreRanges),
+                    datasets: [{
+                        label: '成绩饼图',
+                        data: Object.values(scoreRanges),
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(255, 206, 86, 0.2)',
+                            'rgba(75, 192, 192, 0.2)',
+                            'rgba(153, 102, 255, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+<div id="teacherInfo"></div>
+<div id="courseDetails"></div>
+<button id="fetchScores">查询成绩</button>
+<button id="logoutButton">退出登录</button>
+<div id="courseScores"></div>
+
+<div class="update-score-form">
+    <h2>修改学生成绩</h2>
+    <label for="studentId">学生ID：</label>
+    <input type="text" id="studentId" name="studentId"><br>
+    <label for="courseId">课程ID：</label>
+    <input type="text" id="courseId" name="courseId"><br>
+    <label for="score">成绩：</label>
+    <input type="text" id="score" name="score"><br>
+    <button id="updateScoreButton">更新成绩</button>
+</div>
+
+<div class="add-student-form">
+    <h2>新增学生</h2>
+    <label for="newStudentId">学生ID：</label>
+    <input type="text" id="newStudentId" name="newStudentId"><br>
+    <label for="newCourseId">课程ID：</label>
+    <input type="text" id="newCourseId" name="newCourseId"><br>
+    <label for="newScore">成绩：</label>
+    <input type="text" id="newScore" name="newScore"><br>
+    <button id="addStudentButton">新增学生</button>
+</div>
+
+<div class="delete-student-form">
+    <h2>删除学生</h2>
+    <label for="deleteStudentId">学生ID：</label>
+    <input type="text" id="deleteStudentId" name="deleteStudentId"><br>
+    <label for="deleteCourseId">课程ID：</label>
+    <input type="text" id="deleteCourseId" name="deleteCourseId"><br>
+    <button id="deleteStudentButton">删除学生</button>
+</div>
+
+<div class="update-password-form">
+    <h2>修改密码</h2>
+    <label for="newPassword">新密码：</label>
+    <input type="password" id="newPassword" name="newPassword"><br>
+    <button id="updatePasswordButton">修改密码</button>
+</div>
+</body>
+</html>

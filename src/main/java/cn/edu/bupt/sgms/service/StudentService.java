@@ -11,10 +11,12 @@ public interface StudentService extends IService<Student> {
 
     String login(String username, String password);
 
-    Student getStudentInfo(String token);
+    StudentInfo getStudentInfo(String token);
 
     List<CourseScore> getStudentScore(String token);
 
     void logout(String token);
+
+    void changePassword(String token, String password);
 }
 

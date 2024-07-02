@@ -257,4 +257,37 @@ public class AdminController {
             return ResponseEntity.badRequest().body(new Response<>(400, e.getMessage(), null));
         }
     }
+
+    // 管理员重置学生密码
+    @PutMapping("/studentPassword/{studentId}")
+    public ResponseEntity<Response<String>> resetStudentPassword(@RequestHeader("Authorization") String authHeader, @PathVariable("studentId") Integer studentId, @RequestBody Password password) {
+        try {
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                String token = authHeader.substring(7);
+                adminService.resetStudentPassword(token, studentId, password.getPassword());
+                return ResponseEntity.ok(new Response<>(200, "Reset student password successful", null));
+            } else {
+                return ResponseEntity.badRequest().body(new Response<>(400, "No Bearer Token found", null));
+            }
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(new Response<>(400, e.getMessage(), null));
+        }
+    }
+
+    // 管理员重置教师密码
+    @PutMapping("/teacherPassword/{teacherId}")
+    public ResponseEntity<Response<String>> resetTeacherPassword(@RequestHeader("Authorization") String authHeader, @PathVariable("teacherId") Integer teacherId, @RequestBody Password password) {
+        try {
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                String token = authHeader.substring(7);
+                adminService.resetTeacherPassword(token, teacherId, password.getPassword());
+                return ResponseEntity.ok(new Response<>(200, "Reset teacher password successful", null));
+            } else {
+                return ResponseEntity.badRequest().body(new Response<>(400, "No Bearer Token found", null));
+            }
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(new Response<>(400, e.getMessage(), null));
+        }
+    }
+
 }

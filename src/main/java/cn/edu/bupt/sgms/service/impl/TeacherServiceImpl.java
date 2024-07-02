@@ -1,6 +1,7 @@
 package cn.edu.bupt.sgms.service.impl;
 
 import cn.edu.bupt.sgms.DTO.CourseScore;
+import cn.edu.bupt.sgms.DTO.TeacherInfo;
 import cn.edu.bupt.sgms.entity.Course;
 import cn.edu.bupt.sgms.entity.Student;
 import cn.edu.bupt.sgms.entity.TakeCourse;
@@ -39,12 +40,16 @@ public class TeacherServiceImpl extends ServiceImpl<TeacherMapper, Teacher> impl
     }
 
     @Override
-    public Teacher getTeacherInfo(String token) {
+    public TeacherInfo getTeacherInfo(String token) {
         Teacher teacher = teacherMapper.getTeacherInfo(token);
         if (teacher == null) {
             throw new RuntimeException("Invalid token.");
         }
-        return teacher;
+        TeacherInfo teacherInfo = new TeacherInfo();
+        teacherInfo.setUsername(teacher.getUsername());
+        teacherInfo.setTeacherName(teacher.getTeacherName());
+        teacherInfo.setSex(teacher.getSex());
+        return teacherInfo;
     }
 
     @Override
@@ -120,5 +125,16 @@ public class TeacherServiceImpl extends ServiceImpl<TeacherMapper, Teacher> impl
             throw new RuntimeException("The student hasn't selected this course.");
         }
         teacherMapper.deleteStudent(takeCourse);
+    }
+
+    @Override
+    public void updatePassword(String token, String password) {
+        Teacher teacher = teacherMapper.getTeacherInfo(token);
+        if (teacher == null) {
+            throw new RuntimeException("Invalid token.");
+        }
+        teacherMapper.deleteToken(token);
+        // 假设changePassword方法接受两个参数：教师ID和新密码
+        teacherMapper.changePassword(teacher.getTeacherId(), password);
     }
 }

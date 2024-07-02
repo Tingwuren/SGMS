@@ -1,6 +1,7 @@
 package cn.edu.bupt.sgms.service.impl;
 
 import cn.edu.bupt.sgms.DTO.CourseScore;
+import cn.edu.bupt.sgms.DTO.StudentInfo;
 import cn.edu.bupt.sgms.entity.Student;
 import cn.edu.bupt.sgms.mapper.StudentMapper;
 import cn.edu.bupt.sgms.service.StudentService;
@@ -37,12 +38,20 @@ public class StudentServiceImpl extends ServiceImpl<StudentMapper, Student> impl
     }
 
     @Override
-    public Student getStudentInfo(String token) {
+    public StudentInfo getStudentInfo(String token) {
         Student student = studentMapper.getStudentInfo(token);
         if (student == null) {
             throw new RuntimeException("Invalid token.");
         }
-        return student;
+        StudentInfo studentInfo = new StudentInfo();
+        studentInfo.setUsername(student.getUsername());
+        studentInfo.setStudentName(student.getStudentName());
+        studentInfo.setSex(student.getSex());
+        studentInfo.setClassId(student.getClassId());
+        studentInfo.setBirthdate(student.getBirthdate());
+        studentInfo.setContactInfo(student.getContactInfo());
+        studentInfo.setAddress(student.getAddress());
+        return studentInfo;
     }
 
     @Override
@@ -53,6 +62,17 @@ public class StudentServiceImpl extends ServiceImpl<StudentMapper, Student> impl
         }
         // 假设getStudentScore方法接受一个参数：学生ID
         return studentMapper.getStudentScore(student.getStudentId());
+    }
+
+    @Override
+    public void changePassword(String token, String password) {
+        Student student = studentMapper.getStudentInfo(token);
+        if (student == null) {
+            throw new RuntimeException("Invalid token.");
+        }
+        studentMapper.deleteToken(token);
+        // 假设changePassword方法接受两个参数：学生ID和新密码
+        studentMapper.changePassword(student.getStudentId(), password);
     }
 }
 

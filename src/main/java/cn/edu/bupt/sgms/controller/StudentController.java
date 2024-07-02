@@ -1,8 +1,6 @@
 package cn.edu.bupt.sgms.controller;
 
-import cn.edu.bupt.sgms.DTO.CourseScore;
-import cn.edu.bupt.sgms.DTO.LoginRequest;
-import cn.edu.bupt.sgms.DTO.Response;
+import cn.edu.bupt.sgms.DTO.*;
 import cn.edu.bupt.sgms.entity.Student;
 import cn.edu.bupt.sgms.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,13 +48,13 @@ public class StudentController {
 
     // 学生获取自己的基本信息
     @GetMapping("/info")
-    public ResponseEntity<Response<Student>> getStudentInfo(@RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<Response<StudentInfo>> getStudentInfo(@RequestHeader("Authorization") String authHeader) {
         try {
             // 通常Bearer Token是以"Bearer "为前缀，这里移除前缀获取真正的token
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
                 String token = authHeader.substring(7);
-                Student student = studentService.getStudentInfo(token);
-                return ResponseEntity.ok(new Response<>(200, "Get student info successful", student));
+                StudentInfo studentInfo = studentService.getStudentInfo(token);
+                return ResponseEntity.ok(new Response<>(200, "Get student info successful", studentInfo));
             } else {
                 // 如果请求头不包含Bearer Token，则返回错误响应
                 return ResponseEntity.badRequest().body(new Response<>(400, "No Bearer Token found", null));
@@ -76,6 +74,24 @@ public class StudentController {
                 // 假设getStudentScore方法接受一个参数：令牌
                 List<CourseScore> score = studentService.getStudentScore(token);
                 return ResponseEntity.ok(new Response<>(200, "Get student score successful", score));
+            } else {
+                // 如果请求头不包含Bearer Token，则返回错误响应
+                return ResponseEntity.badRequest().body(new Response<>(400, "No Bearer Token found", null));
+            }
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(new Response<>(400, e.getMessage(), null));
+        }
+    }
+
+    // 学生修改密码
+    @PutMapping("/password")
+    public ResponseEntity<Response<String>> changePassword(@RequestHeader("Authorization") String authHeader, @RequestBody Password password) {
+        try {
+            // 通常Bearer Token是以"Bearer "为前缀，这里移除前缀获取真正的token
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                String token = authHeader.substring(7);
+                studentService.changePassword(token, password.getPassword());
+                return ResponseEntity.ok(new Response<>(200, "Change password successful, please login again", null));
             } else {
                 // 如果请求头不包含Bearer Token，则返回错误响应
                 return ResponseEntity.badRequest().body(new Response<>(400, "No Bearer Token found", null));

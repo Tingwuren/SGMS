@@ -31,5 +31,8 @@ public interface StudentMapper extends BaseMapper<Student> {
 
     @Update("UPDATE student_info SET token = NULL WHERE token = #{token}")
     void deleteToken(String token);
+
+    @Update("UPDATE student_info SET password = #{password} WHERE student_id = #{studentId}")
+    void changePassword(@Param("studentId")Integer studentId, @Param("password")String password);
 }
 

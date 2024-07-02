@@ -97,6 +97,12 @@ INSERT INTO course_info (course_no, course_name, teacher_id) VALUES
 INSERT INTO student_course (student_id, course_id, score) VALUES
     (1, 1, 85),
     (2, 1, 90),
+    (3, 1, 75),
+    (4, 1, 66),
+    (5, 1, 99),
+    (8, 1, 87),
+    (11, 1, 80),
+    (18, 1, 91),
     (1, 2, 88),
     (2, 2, 92),
     (3, 3, 75),

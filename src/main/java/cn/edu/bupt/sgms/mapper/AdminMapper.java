@@ -82,4 +82,16 @@ public interface AdminMapper extends BaseMapper<Admin> {
 
     @Update("UPDATE admin_info SET token = NULL WHERE token = #{token}")
     void deleteToken(String token);
+
+    @Update("UPDATE student_info SET password = #{password} WHERE student_id = #{studentId}")
+    void resetStudentPassword(@Param("studentId")Integer studentId, @Param("password")String password);
+
+    @Update("UPDATE teacher_info SET password = #{password} WHERE teacher_id = #{teacherId}")
+    void resetTeacherPassword(@Param("teacherId")Integer teacherId, @Param("password")String password);
+
+    @Update("UPDATE teacher_info SET token = NULL WHERE teacher_id = #{teacherId}")
+    void deleteTeacherToken(Integer teacherId);
+
+    @Update("UPDATE student_info SET token = NULL WHERE student_id = #{studentId}")
+    void deleteStudentToken(Integer studentId);
 }

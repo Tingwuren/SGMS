@@ -40,4 +40,8 @@ public interface AdminService extends IService<Admin> {
     List<CourseInfo> getAllCourseInfo(String token);
 
     void logout(String token);
+
+    void resetStudentPassword(String token, Integer studentId, String password);
+
+    void resetTeacherPassword(String token, Integer teacherId, String password);
 }

@@ -265,4 +265,32 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
         }
         return courseInfoList;
     }
+
+    @Override
+    public void resetStudentPassword(String token, Integer studentId, String password) {
+        Admin admin = adminMapper.getAdminInfo(token);
+        if (admin == null) {
+            throw new RuntimeException("Invalid token.");
+        }
+        Student student = adminMapper.getStudentInfo(studentId);
+        if (student == null) {
+            throw new RuntimeException("Student not found.");
+        }
+        adminMapper.deleteStudentToken(studentId);
+        adminMapper.resetStudentPassword(studentId, password);
+    }
+
+    @Override
+    public void resetTeacherPassword(String token, Integer teacherId, String password) {
+        Admin admin = adminMapper.getAdminInfo(token);
+        if (admin == null) {
+            throw new RuntimeException("Invalid token.");
+        }
+        Teacher teacher = adminMapper.getTeacherInfo(teacherId);
+        if (teacher == null) {
+            throw new RuntimeException("Teacher not found.");
+        }
+        adminMapper.deleteTeacherToken(teacherId);
+        adminMapper.resetTeacherPassword(teacherId, password);
+    }
 }

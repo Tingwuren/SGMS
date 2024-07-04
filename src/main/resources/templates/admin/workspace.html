@@ -4,61 +4,63 @@
     <meta charset="UTF-8">
     <title>Admin Workspace</title>
     <style>
-        .module {
-            margin-bottom: 20px;
-        }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 20px;
             display: flex;
-            flex-direction: column;
-            align-items: center;
+            font-family: Arial, sans-serif;
+            margin: 0;
         }
-        .card {
-            background-color: white;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
-            padding: 20px;
-            margin: 10px;
-            width: 80%;
-            max-width: 600px;
+        .sidebar {
+            width: 250px;
+            background-color: #333;
+            position: fixed;
+            height: 100%;
+            overflow: auto;
+            padding-top: 20px;
         }
-        p, table, button, input {
-            margin-bottom: 10px;
-        }
-        button, input[type="password"] {
-            padding: 10px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-        button {
-            background-color: #007bff;
+        .sidebar a {
+            padding: 10px 15px;
+            text-decoration: none;
+            font-size: 18px;
             color: white;
+            display: block;
         }
-        button:hover {
+        .sidebar a:hover {
+            background-color: #575757;
+        }
+        .content {
+            margin-left: 260px;
+            padding: 20px;
+            flex-grow: 1;
+        }
+        .module {
+            background: #f4f4f4;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .module label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .module input[type="text"], .module input[type="password"] {
+            width: 97%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .module button {
             background-color: #0056b3;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
         }
-        input[type="password"] {
-            width: calc(100% - 22px);
-        }
-        table {
-            border-collapse: collapse;
-            width: 100%;
-        }
-        th, td {
-            text-align: left;
-            padding: 8px;
-            border-bottom: 1px solid #ddd;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-        h2 {
-            color: #333;
+        .module button:hover {
+            background-color: #0056b3;
         }
     </style>
     <script>
@@ -709,75 +711,81 @@
 </head>
 <body>
 
-<div class="module">
-    <button onclick="fetchAllStudents()">查询所有学生信息</button>
-    <div id="allStudentsInfoContainer"></div>
-</div>
-<div class="module">
-    <label for="studentId">学生ID：</label>
-    <input type="text" id="studentId" name="studentId">
-    <button onclick="fetchStudentInfo()">查询学生信息</button>
-    <div id="singleStudentInfoContainer"></div>
-    <div id="updateStudentFormContainer"></div>
-</div>
-<div class="module">
-    <label for="deleteStudentId">删除学生ID：</label>
-    <input type="text" id="deleteStudentId" name="deleteStudentId">
-    <button onclick="deleteStudent()">删除学生</button>
+
+<div class="sidebar">
+    <a href="#all-info">查询信息</a>
+    <a href="#student-info">学生信息</a>
+    <a href="#teacher-info">教师信息</a>
+    <a href="#course-info">课程信息</a>
+    <a href="#logout">退出登录</a>
 </div>
 
-<div class="module">
-    <label for="resetStudentPasswordId">重置学生密码ID：</label>
-    <input type="text" id="resetStudentPasswordId" name="resetStudentPasswordId">
-    <label for="resetStudentPassword">新密码：</label>
-    <input type="password" id="resetStudentPassword" name="resetStudentPassword">
-    <button onclick="resetStudentPassword()">重置学生密码</button>
-</div>
+<div class="content">
+    <div id="all-info" class="module">
+        <button onclick="fetchAllStudents()">查询所有学生信息</button>
+        <button onclick="fetchAllTeachers()">查询所有教师信息</button>
+        <button onclick="fetchAllCourses()">查询所有课程信息</button>
+        <div id="allStudentsInfoContainer"></div>
+        <div id="allTeachersInfoContainer"></div>
+        <div id="allCoursesInfoContainer"></div>
+    </div>
 
-<div class="module">
-    <button onclick="fetchAllTeachers()">查询所有教师信息</button>
-    <div id="allTeachersInfoContainer"></div>
-</div>
-<div class="module">
-    <label for="teacherId">教师ID：</label>
-    <input type="text" id="teacherId" name="teacherId">
-    <button onclick="fetchTeacherInfo()">查询教师信息</button>
-    <div id="singleTeacherInfoContainer"></div>
-    <div id="updateTeacherFormContainer"></div>
-</div>
-<div class="module">
-    <label for="deleteTeacherId">删除教师ID：</label>
-    <input type="text" id="deleteTeacherId" name="deleteTeacherId">
-    <button onclick="deleteTeacher()">删除教师</button>
-</div>
+    <div id="student-info" class="module">
+        <label for="studentId">学生ID：</label>
+        <input type="text" id="studentId" name="studentId">
+        <button onclick="fetchStudentInfo()">查询学生信息</button>
+        <div id="singleStudentInfoContainer"></div>
+        <div id="updateStudentFormContainer"></div>
+    </div>
+    <div class="module">
+        <label for="deleteStudentId">删除学生ID：</label>
+        <input type="text" id="deleteStudentId" name="deleteStudentId">
+        <button onclick="deleteStudent()">删除学生</button>
+    </div>
+    <div class="module">
+        <label for="resetStudentPasswordId">重置学生密码ID：</label>
+        <input type="text" id="resetStudentPasswordId" name="resetStudentPasswordId">
+        <label for="resetStudentPassword">新密码：</label>
+        <input type="password" id="resetStudentPassword" name="resetStudentPassword">
+        <button onclick="resetStudentPassword()">重置学生密码</button>
+    </div>
 
-<div class="module">
-    <label for="resetTeacherPasswordId">重置教师密码ID：</label>
-    <input type="text" id="resetTeacherPasswordId" name="resetTeacherPasswordId">
-    <label for="resetTeacherPassword">新密码：</label>
-    <input type="password" id="resetTeacherPassword" name="resetTeacherPassword">
-    <button onclick="resetTeacherPassword()">重置教师密码</button>
-</div>
+    <div id="teacher-info" class="module">
+        <label for="teacherId">教师ID：</label>
+        <input type="text" id="teacherId" name="teacherId">
+        <button onclick="fetchTeacherInfo()">查询教师信息</button>
+        <div id="singleTeacherInfoContainer"></div>
+        <div id="updateTeacherFormContainer"></div>
+    </div>
+    <div class="module">
+        <label for="deleteTeacherId">删除教师ID：</label>
+        <input type="text" id="deleteTeacherId" name="deleteTeacherId">
+        <button onclick="deleteTeacher()">删除教师</button>
+    </div>
+    <div class="module">
+        <label for="resetTeacherPasswordId">重置教师密码ID：</label>
+        <input type="text" id="resetTeacherPasswordId" name="resetTeacherPasswordId">
+        <label for="resetTeacherPassword">新密码：</label>
+        <input type="password" id="resetTeacherPassword" name="resetTeacherPassword">
+        <button onclick="resetTeacherPassword()">重置教师密码</button>
+    </div>
 
-<div class="module">
-    <button onclick="fetchAllCourses()">查询所有课程信息</button>
-    <div id="allCoursesInfoContainer"></div>
-</div>
-<div class="module">
-    <label for="courseId">课程ID：</label>
-    <input type="text" id="courseId" name="courseId">
-    <button onclick="fetchCourseInfo()">查询课程信息</button>
-    <div id="singleCourseInfoContainer"></div>
-    <div id="updateCourseFormContainer"></div>
-</div>
-<div class="module">
-    <label for="deleteCourseId">删除课程ID：</label>
-    <input type="text" id="deleteCourseId" name="deleteCourseId">
-    <button onclick="deleteCourse()">删除课程</button>
-</div>
+    <div id="course-info" class="module">
+        <label for="courseId">课程ID：</label>
+        <input type="text" id="courseId" name="courseId">
+        <button onclick="fetchCourseInfo()">查询课程信息</button>
+        <div id="singleCourseInfoContainer"></div>
+        <div id="updateCourseFormContainer"></div>
+    </div>
+    <div class="module">
+        <label for="deleteCourseId">删除课程ID：</label>
+        <input type="text" id="deleteCourseId" name="deleteCourseId">
+        <button onclick="deleteCourse()">删除课程</button>
+    </div>
 
-<div class="module">
-    <button onclick="adminLogout()">退出登录</button>
+    <div id="logout" class="module">
+        <button onclick="adminLogout()">退出登录</button>
+    </div>
 </div>
 
 </body>

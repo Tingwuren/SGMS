@@ -6,73 +6,69 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
         body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background: linear-gradient(135deg, #74b9ff, #a29bfe);
-            font-family: Arial, sans-serif;
         }
-        form {
-            padding: 40px;
+        .login-card {
+            background-color: #f4f4f4;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             border-radius: 10px;
-            background: white;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            animation: appear 0.5s ease-in-out;
-        }
-        label, input, select, button {
-            display: block;
+            padding: 20px;
             width: 100%;
+            max-width: 400px;
+        }
+        .login-card h2 {
+            text-align: center;
             margin-bottom: 20px;
         }
-        input, select {
-            padding: 15px;
+        .login-card label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .login-card input, .login-card select, .login-card button {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
-            transition: border-color 0.3s;
         }
-        input:focus, select:focus {
-            border-color: #74b9ff;
-            outline: none;
-        }
-        button {
-            padding: 15px;
-            border: none;
-            border-radius: 5px;
-            background-color: #0984e3;
+        .login-card button {
+            background-color: #007bff;
             color: white;
+            border: none;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: background-color 0.3s ease;
         }
-        button:hover {
-            background-color: #74b9ff;
-        }
-        @keyframes appear {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .login-card button:hover {
+            background-color: #0056b3;
         }
     </style>
+
 </head>
 <body>
-<form id="loginForm">
-    <label for="username">Username:</label>
-    <input type="text" id="username" name="username" required>
-    <label for="password">Password:</label>
-    <input type="password" id="password" name="password" required>
-    <label for="loginType">Login as:</label>
-    <select id="loginType">
-        <option value="admin">Admin</option>
-        <option value="student">Student</option>
-        <option value="teacher">Teacher</option>
-    </select>
-    <button type="submit">Login</button>
-</form>
+<div class="login-card">
+        <h2>Login</h2>
+        <form id="loginForm">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+            <label for="loginType">Login as:</label>
+            <select id="loginType">
+                <option value="admin">Admin</option>
+                <option value="student">Student</option>
+                <option value="teacher">Teacher</option>
+            </select>
+            <button type="submit">Login</button>
+        </form>
+    </div>
 
 <script>
     document.getElementById('loginForm').addEventListener('submit', function(e) {
